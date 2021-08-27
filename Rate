@@ -1,0 +1,101 @@
+else if (str.substr(0, 6) == "/rate ")
+
+                                    {
+
+                                        if (isWorldOwner(peer, world))
+
+                                        {
+
+                                            Player::OnConsoleMessage(peer, "`oYou can't rate your own world!");
+
+                                            break;
+
+                                        }
+
+                                        if (isWorldAdmin(peer, world))
+
+                                        {
+
+                                            Player::OnConsoleMessage(peer, "`oYou can't rate world that you have access to!");
+
+                                            break;
+
+                                        }
+
+                                        if (static_cast<PlayerInfo*>(peer->data)->haveGrowId)
+
+                                        {
+
+                                            string ratingcountcheck = str.substr(6, cch.length() - 6 - 1);
+
+                                            bool contains_non_int = !std::regex_match(ratingcountcheck, std::regex("^[0-9]+$"));
+
+                                            if (contains_non_int == true)
+
+                                            {
+
+                                                Player::OnConsoleMessage(peer, "`oType '/rate X' to rate a world. You can rate a world 1-5! A 1 or 2 means you don't like it. 3 is average. 4 or 5 means you liked it! You can't rate a world of your own, or use alts to rate up your world. Nobody will ever see how you rated, so don't pay people to rate your world!");
+
+                                            }
+
+                                            else
+
+                                            {
+
+                                                auto sendratedby = std::experimental::filesystem::exists("ratedby/" + static_cast<PlayerInfo*>(peer->data)->rawName + "/" + static_cast<PlayerInfo*>(peer->data)->currentWorld + ".txt"); //when u rate it creates info
+
+                                                if (sendratedby)
+
+                                                {
+
+                                                    Player::OnConsoleMessage(peer, "`oThanks for rating! World ratings are updated once a day. If you rate the same world again, it wont count!"); //if u rated world already and u need wait 24hrs until WOTD releases
+
+                                                    break;
+
+                                                }
+
+                                                int ratescheck = stoi(ratingcountcheck);
+
+                                                //check for rating
+
+                                                if (ratescheck <= 0 || ratescheck > 5)
+
+                                                {
+
+                                                    Player::OnConsoleMessage(peer, "`oType '/rate X' to rate a world. You can rate a world 1-5! A 1 or 2 means you don't like it. 3 is average. 4 or 5 means you liked it! You can't rate a world of your own, or use alts to rate up your world. Nobody will ever see how you rated, so don't pay people to rate your world!");
+
+                                                    break;
+
+                                                }
+
+                                                Player::OnConsoleMessage(peer, "`oThanks for rating! World ratings are updated once a day. If you rate the same world again, it will replace this rating.");
+
+                                                namespace fs = std::experimental::filesystem;
+
+                                                fs::create_directory("ratedby/" + static_cast<PlayerInfo*>(peer->data)->rawName + ""); //folder of rated by players
+
+                                                ofstream ratedbysave("ratedby/" + static_cast<PlayerInfo*>(peer->data)->rawName + "/" + static_cast<PlayerInfo*>(peer->data)->currentWorld + ".txt"); //folder with name of player and world name txt with how much count
+
+                                                ratedbysave.close();
+
+                                                int ratings = 0;
+
+                                                ifstream savecountyes("rates/" + static_cast<PlayerInfo*>(peer->data)->currentWorld + ".txt"); //count of world ratings
+
+                                                savecountyes >> ratings;
+
+                                                savecountyes.close();
+
+                                                ratings = ratescheck + ratings;
+
+                                                std::ofstream sendrates("rates/" + static_cast<PlayerInfo*>(peer->data)->currentWorld + ".txt"); //makes world.txt with count
+
+                                                sendrates << ratings;
+
+                                                sendrates.close();
+
+                                            }
+
+                                        }
+
+                                    }
